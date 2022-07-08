@@ -19,7 +19,7 @@ jobs:
       - uses: dart-lang/setup-dart@v1.3
         with:
           sdk: stable
-      - uses: mxschmitt/action-tmate@v3
+      - run: dart pub get
       - run: dart analyze --fatal-infos
       - run: dart test
       - run: dart compile exe bin/hbot.dart
