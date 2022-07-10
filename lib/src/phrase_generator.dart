@@ -39,39 +39,48 @@ class PhraseGenerator {
       );
     }
 
+    var phraseLines =
+        (await phraseFile.readAsLines()).map((e) => e.trim()).toList();
+    return fromStringList(phraseLines);
+  }
+
+  static PhraseGenerator fromString(
+    String phrase, {
+    String lineEndings = '\n',
+  }) {
+    var phraseLines = phrase.split(lineEndings).map((e) => e.trim()).toList();
+    return fromStringList(phraseLines);
+  }
+
+  static PhraseGenerator fromStringList(List<String> phraseLines) {
     Map<String, _PhrasePartition> partitions = {};
     _PhrasePartition? currentPartition;
 
-    var lines = (await phraseFile.readAsLines()).map((e) => e.trim()).toList();
-    for (var i = 0; i < lines.length; ++i) {
-      final line = lines[i];
+    for (var i = 0; i < phraseLines.length; ++i) {
+      final line = phraseLines[i];
       if (line.startsWith('{')) {
         if (currentPartition != null) {
           throw FileSystemException(
             'Unexpected line number ${i + 1}. Unexpected opening brace.',
-            phraseFile.path,
           );
         }
 
-        if (i == lines.length - 1) {
+        if (i == phraseLines.length - 1) {
           throw FileSystemException(
             'Unexpected end of file. Expected closing brace.',
-            phraseFile.path,
           );
         }
 
-        final nextLine = lines[++i];
+        final nextLine = phraseLines[++i];
         if (!nextLine.startsWith('<')) {
           throw FileSystemException(
             'Unexpected line number ${i + 1}. Expected opening angle bracket.',
-            phraseFile.path,
           );
         }
 
         if (!nextLine.endsWith('>')) {
           throw FileSystemException(
             'Unexpected line number ${i + 1}. Expected closing angle bracket.',
-            phraseFile.path,
           );
         }
 
@@ -87,7 +96,6 @@ class PhraseGenerator {
         if (currentPartition == null) {
           throw FileSystemException(
             'Unexpected line number ${i + 1}. Unexpected closing brace.',
-            phraseFile.path,
           );
         }
 
@@ -114,14 +122,12 @@ class PhraseGenerator {
         if (splitClose.length < 2) {
           throw FileSystemException(
             'Unexpected line number ${i + 1}. Expected closing angle bracket.',
-            phraseFile.path,
           );
         }
 
         if (splitClose.length > 2) {
           throw FileSystemException(
             'Unexpected line number ${i + 1}. Expected opening angle bracket.',
-            phraseFile.path,
           );
         }
 
@@ -145,7 +151,6 @@ class PhraseGenerator {
     if (currentPartition != null) {
       throw FileSystemException(
         'Unexpected end of file. Expected closing brace.',
-        phraseFile.path,
       );
     }
 
