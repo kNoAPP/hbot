@@ -6,14 +6,22 @@ import 'package:hbot/hbot.dart';
 void main(List<String> arguments) {
   final parser = ArgParser()
     ..addOption(
-      'token',
-      abbr: 't',
-      help: 'Token to authenticate the Discord bot',
+      'discordToken',
+      help: 'Discord token to authenticate the bot',
+      mandatory: true,
+    )
+    ..addOption(
+      'googleApiKey',
+      help: 'Google Api key to authenticate the image search',
+      mandatory: true,
+    )
+    ..addOption(
+      'customSearchEngine',
+      help: 'Custom search engine id for the image search',
       mandatory: true,
     )
     ..addOption(
       'phrases',
-      abbr: 'p',
       help: 'Relative path to the phrases file to use',
       defaultsTo: 'assets/hbot.phrases',
       mandatory: false,
@@ -27,5 +35,10 @@ void main(List<String> arguments) {
     exit(1);
   }
 
-  startBot(token: result['token'], phrasesFile: File(result['phrases']));
+  startBot(
+    discordToken: result['discordToken'],
+    googleApiKey: result['googleApiKey'],
+    customSearchEngine: result['customSearchEngine'],
+    phrasesFile: File(result['phrases']),
+  );
 }
