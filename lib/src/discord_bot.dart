@@ -21,9 +21,6 @@ Future<void> startBot({
     ..registerPlugin(IgnoreExceptions());
 
   await bot.connect();
-  // Let the bot's connection warm up. This isn't necessary, but it ensures
-  // future calls to Discord don't outright fail.
-  await Future.delayed(Duration(seconds: 2));
 
   final phraseGenerator = await PhraseGenerator.fromFile(phrasesFile);
   final imageApi = CustomSearchApi(clientViaApiKey(googleApiKey));
@@ -52,14 +49,17 @@ class HDiscordBot {
   final _rng = Random();
 
   Future<void> start() async {
+    // Bot is not fully loaded until this completes.
+    bot.eventsWs.onReady.listen((_) {
+      setRandomPresence();
+      Timer.periodic(Duration(hours: 2), (timer) => setRandomPresence());
+    });
+
     bot.eventsWs.onMessageReceived.listen((event) async {
       if (event.message.content == '!h') {
         await handleHMessage(event.message);
       }
     });
-
-    setRandomPresence();
-    Timer.periodic(Duration(hours: 2), (timer) => setRandomPresence());
   }
 
   final activities = [
