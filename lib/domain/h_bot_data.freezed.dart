@@ -91,8 +91,8 @@ class __$$_HBotDataCopyWithImpl<$Res> extends _$HBotDataCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$_HBotData implements _HBotData {
-  _$_HBotData({this.count = 0});
+class _$_HBotData extends _HBotData {
+  _$_HBotData({this.count = 0}) : super._();
 
   factory _$_HBotData.fromJson(Map<String, dynamic> json) =>
       _$$_HBotDataFromJson(json);
@@ -119,8 +119,9 @@ class _$_HBotData implements _HBotData {
   }
 }
 
-abstract class _HBotData implements HBotData {
+abstract class _HBotData extends HBotData {
   factory _HBotData({int count}) = _$_HBotData;
+  _HBotData._() : super._();
 
   factory _HBotData.fromJson(Map<String, dynamic> json) = _$_HBotData.fromJson;
 

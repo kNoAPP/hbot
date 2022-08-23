@@ -8,6 +8,8 @@ part 'h_bot_data.g.dart';
 
 @unfreezed
 class HBotData with _$HBotData {
+  const HBotData._();
+
   factory HBotData({
     @Default(0) int count,
   }) = _HBotData;
