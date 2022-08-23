@@ -7,6 +7,7 @@ import 'package:googleapis_auth/googleapis_auth.dart';
 import 'package:hbot/core/google_image_search.dart';
 import 'package:hbot/core/phrase_generator.dart';
 import 'package:hbot/domain/h_bot_data.dart';
+import 'package:logging/logging.dart';
 import 'package:nyxx/nyxx.dart';
 
 Future<void> startBot({
@@ -15,8 +16,7 @@ Future<void> startBot({
   required String customSearchEngine,
   required File phrasesFile,
 }) async {
-  final bot = NyxxFactory.createNyxxWebsocket(
-      discordToken, GatewayIntents.allUnprivileged)
+  final bot = NyxxFactory.createNyxxWebsocket(discordToken, GatewayIntents.all)
     ..registerPlugin(Logging())
     ..registerPlugin(CliIntegration())
     ..registerPlugin(IgnoreExceptions());
@@ -52,6 +52,7 @@ class HDiscordBot {
   String customSearchEngine;
 
   final _rng = Random();
+  final _log = Logger('HDiscordBot');
 
   Future<void> start() async {
     // Bot is not fully loaded until this completes.
@@ -113,6 +114,8 @@ class HDiscordBot {
   }
 
   Future<void> handleHMessage(IMessage message) async {
+    _log.info('Handling h message from ${message.author.tag}');
+
     await message.delete();
     await message.channel.sendMessage(MessageBuilder.content(await getImage(
       imageApi: imageApi,

@@ -315,14 +315,14 @@ packages:
       name: nyxx
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "3.4.2"
+    version: "4.0.0"
   nyxx_interactions:
     dependency: "direct main"
     description:
       name: nyxx_interactions
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "4.2.1"
+    version: "4.3.1"
   package_config:
     dependency: transitive
     description:
