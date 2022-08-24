@@ -134,7 +134,7 @@ class HDiscordBot {
 
     if (hBotData.count % 100 == 0) {
       await message.channel.sendMessage(MessageBuilder.content(
-          'New H Milestone! <@&421563234651471872> has been summoned ${hBotData.count} times!'));
+          'This is the ${hBotData.count}th H ping since April 5th, 2019. Crazy!'));
     }
   }
 }
