@@ -131,5 +131,10 @@ class HDiscordBot {
 
     hBotData.count++;
     await hBotData.save();
+
+    if (hBotData.count % 100 == 0) {
+      await message.channel.sendMessage(MessageBuilder.content(
+          'New H Milestone! <@&421563234651471872> has been summoned ${hBotData.count} times!'));
+    }
   }
 }
