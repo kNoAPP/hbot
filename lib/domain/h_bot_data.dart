@@ -21,7 +21,7 @@ class HBotData with _$HBotData {
     String path = 'hdata.json',
   }) async {
     final file = File(path);
-    return file.writeAsString(toJson().toString());
+    return file.writeAsString(jsonEncode(toJson()));
   }
 
   static Future<HBotData> load({
