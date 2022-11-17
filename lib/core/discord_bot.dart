@@ -4,8 +4,9 @@ import 'dart:math';
 
 import 'package:googleapis/customsearch/v1.dart';
 import 'package:googleapis_auth/googleapis_auth.dart';
-import 'package:hbot/src/google_image_search.dart';
-import 'package:hbot/src/phrase_generator.dart';
+import 'package:hbot/core/google_image_search.dart';
+import 'package:hbot/core/phrase_generator.dart';
+import 'package:hbot/domain/h_bot_data.dart';
 import 'package:logging/logging.dart';
 import 'package:nyxx/nyxx.dart';
 import 'package:nyxx_interactions/nyxx_interactions.dart';
@@ -23,11 +24,13 @@ Future<void> startBot({
 
   await bot.connect();
 
+  final hBotData = await HBotData.load();
   final phraseGenerator = await PhraseGenerator.fromFile(phrasesFile);
   final imageApi = CustomSearchApi(clientViaApiKey(googleApiKey));
 
   await HDiscordBot(
           bot: bot,
+          hBotData: hBotData,
           phraseGenerator: phraseGenerator,
           imageApi: imageApi,
           customSearchEngine: customSearchEngine)
@@ -37,12 +40,14 @@ Future<void> startBot({
 class HDiscordBot {
   HDiscordBot({
     required this.bot,
+    required this.hBotData,
     required this.phraseGenerator,
     required this.imageApi,
     required this.customSearchEngine,
   });
 
   INyxxWebsocket bot;
+  HBotData hBotData;
   PhraseGenerator phraseGenerator;
   CustomSearchApi imageApi;
   String customSearchEngine;
@@ -147,5 +152,13 @@ class HDiscordBot {
         .replaceAll('%name%', '<@${message.author.id}>');
     await message.channel
         .sendMessage(MessageBuilder.content('$phrase <@&421563234651471872>'));
+
+    hBotData.count++;
+    await hBotData.save();
+
+    if (hBotData.count % 100 == 0) {
+      await message.channel.sendMessage(MessageBuilder.content(
+          'This is the ${hBotData.count}th H ping since April 5th, 2019. Crazy!'));
+    }
   }
 }

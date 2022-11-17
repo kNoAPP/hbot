@@ -1,4 +1,4 @@
-import 'package:hbot/src/phrase_generator.dart';
+import 'package:hbot/core/phrase_generator.dart';
 import 'package:test/test.dart';
 
 void main() {

@@ -1,1 +1,1 @@
-export 'package:hbot/src/discord_bot.dart' show startBot;
+export 'package:hbot/core/discord_bot.dart' show startBot;
