@@ -8,6 +8,7 @@ import 'package:hbot/src/google_image_search.dart';
 import 'package:hbot/src/phrase_generator.dart';
 import 'package:logging/logging.dart';
 import 'package:nyxx/nyxx.dart';
+import 'package:nyxx_interactions/nyxx_interactions.dart';
 
 Future<void> startBot({
   required String discordToken,
@@ -50,6 +51,7 @@ class HDiscordBot {
   final _log = Logger('HDiscordBot');
 
   Future<void> start() async {
+    _registerCommands();
     // Bot is not fully loaded until this completes.
     bot.eventsWs.onReady.listen((_) {
       setRandomPresence();
@@ -61,6 +63,27 @@ class HDiscordBot {
         await handleHMessage(event.message);
       }
     });
+  }
+
+  Future<void> _registerCommands() async {
+    final interactions = IInteractions.create(WebsocketInteractionBackend(bot));
+
+    final flipCoinSubcommand = CommandOptionBuilder(
+        CommandOptionType.subCommand, 'coin', 'Flip a coin')
+      ..registerHandler((event) async {
+        final result = Random().nextBool() ? 'tail' : 'heads';
+
+        await event.respond(MessageBuilder.content('It\'s $result'));
+      });
+
+    final flipCommand = SlashCommandBuilder(
+        'flip',
+        // cspell: disable-next-line
+        'Flip coins, roll dice, pray to RNGesus',
+        [flipCoinSubcommand]);
+
+    interactions.registerSlashCommand(flipCommand);
+    interactions.syncOnReady();
   }
 
   final activities = [
@@ -100,6 +123,7 @@ class HDiscordBot {
     ActivityBuilder.listening('true crime podcasts'),
     ActivityBuilder.listening('my loud neighbors'),
   ];
+
   void setRandomPresence() {
     final activity = activities[_rng.nextInt(activities.length)];
     bot.setPresence(PresenceBuilder.of(
