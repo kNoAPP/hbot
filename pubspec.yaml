@@ -23,7 +23,7 @@ dev_dependencies:
   freezed: ^2.1.0+1
   json_serializable: ^6.3.1
   lints: ^2.0.0
-  test: ^1.16.0
+  test: ^1.22.2
 
 cider:
   link_template:
