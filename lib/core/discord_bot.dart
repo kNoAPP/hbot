@@ -2,39 +2,46 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 
+import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:googleapis/customsearch/v1.dart';
 import 'package:googleapis_auth/googleapis_auth.dart';
 import 'package:hbot/core/google_image_search.dart';
 import 'package:hbot/core/phrase_generator.dart';
 import 'package:hbot/domain/h_bot_data.dart';
-import 'package:logging/logging.dart';
 import 'package:nyxx/nyxx.dart';
-import 'package:nyxx_interactions/nyxx_interactions.dart';
 
 Future<void> startBot({
   required String discordToken,
   required String googleApiKey,
   required String customSearchEngine,
+  required String googleAiApiKey,
   required File phrasesFile,
 }) async {
-  final bot = NyxxFactory.createNyxxWebsocket(discordToken, GatewayIntents.all)
-    ..registerPlugin(Logging())
-    ..registerPlugin(CliIntegration())
-    ..registerPlugin(IgnoreExceptions());
-
-  await bot.connect();
+  final bot = await Nyxx.connectGateway(
+    discordToken,
+    GatewayIntents.all,
+    options: GatewayClientOptions(
+      plugins: [
+        Logging(),
+        CliIntegration(),
+        IgnoreExceptions(),
+      ],
+    ),
+  );
 
   final hBotData = await HBotData.load();
   final phraseGenerator = await PhraseGenerator.fromFile(phrasesFile);
   final imageApi = CustomSearchApi(clientViaApiKey(googleApiKey));
+  final model = GenerativeModel(model: 'gemini-pro', apiKey: googleAiApiKey);
 
   await HDiscordBot(
-          bot: bot,
-          hBotData: hBotData,
-          phraseGenerator: phraseGenerator,
-          imageApi: imageApi,
-          customSearchEngine: customSearchEngine)
-      .start();
+    bot: bot,
+    hBotData: hBotData,
+    phraseGenerator: phraseGenerator,
+    imageApi: imageApi,
+    customSearchEngine: customSearchEngine,
+    model: model,
+  ).start();
 }
 
 class HDiscordBot {
@@ -44,121 +51,222 @@ class HDiscordBot {
     required this.phraseGenerator,
     required this.imageApi,
     required this.customSearchEngine,
+    required this.model,
   });
 
-  INyxxWebsocket bot;
+  NyxxGateway bot;
   HBotData hBotData;
   PhraseGenerator phraseGenerator;
   CustomSearchApi imageApi;
   String customSearchEngine;
+  GenerativeModel model;
 
   final _rng = Random();
   final _log = Logger('HDiscordBot');
 
   Future<void> start() async {
-    _registerCommands();
     // Bot is not fully loaded until this completes.
-    bot.eventsWs.onReady.listen((_) {
+    bot.onReady.listen((_) {
       setRandomPresence();
       Timer.periodic(Duration(hours: 2), (timer) => setRandomPresence());
     });
 
-    bot.eventsWs.onMessageReceived.listen((event) async {
+    bot.onMessageCreate.listen((event) async {
       if (event.message.content == '!h') {
         await handleHMessage(event.message);
       }
     });
   }
 
-  Future<void> _registerCommands() async {
-    final interactions = IInteractions.create(WebsocketInteractionBackend(bot));
-
-    final flipCoinSubcommand = CommandOptionBuilder(
-        CommandOptionType.subCommand, 'coin', 'Flip a coin')
-      ..registerHandler((event) async {
-        final result = Random().nextBool() ? 'tail' : 'heads';
-
-        await event.respond(MessageBuilder.content('It\'s $result'));
-      });
-
-    final flipCommand = SlashCommandBuilder(
-        'flip',
-        // cspell: disable-next-line
-        'Flip coins, roll dice, pray to RNGesus',
-        [flipCoinSubcommand]);
-
-    interactions.registerSlashCommand(flipCommand);
-    interactions.syncOnReady();
-  }
-
   final activities = [
-    ActivityBuilder.watching('your epic #plays'),
-    ActivityBuilder.watching('the US explode'),
-    ActivityBuilder.watching('California burn'),
-    ActivityBuilder.watching('Zucc watch you'),
-    ActivityBuilder.watching('Jere FC charts'),
-    ActivityBuilder.watching('James solo baron'),
-    ActivityBuilder.watching('Grant ward bushes'),
-    ActivityBuilder.watching('Josh play hentai'),
-    ActivityBuilder.watching('kNo gaslight people'),
-    ActivityBuilder.watching('DiamondFire'),
-    ActivityBuilder.watching('Arcane'),
-    ActivityBuilder.watching('puppers go woo'),
-    ActivityBuilder.watching('for H pings'),
-    ActivityBuilder.watching('Steve Harvey'),
-    ActivityBuilder.streaming(
-        'DF let\'s plays', 'https://www.twitch.tv/jeremaster104'),
-    ActivityBuilder.streaming(
-        'Minecraft magic', 'https://www.twitch.tv/jeremaster104'),
-    ActivityBuilder.streaming(
-        'free \$ giveaways', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'),
-    ActivityBuilder.streaming(
-        'cute cat videos', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'),
-    ActivityBuilder.game('League of Legends'),
-    ActivityBuilder.game('Legends of Runeterra'),
-    ActivityBuilder.game('Apex Legends'),
-    ActivityBuilder.game('Beat Saber'),
-    ActivityBuilder.game('TFT with HMusic'),
-    ActivityBuilder.game('with physics'),
-    ActivityBuilder.game('with my own code'),
-    ActivityBuilder.game('speedrun 1900s simulator'),
-    ActivityBuilder.game('during work hours'),
-    ActivityBuilder.listening('your conversations'),
-    ActivityBuilder.listening('your music'),
-    ActivityBuilder.listening('true crime podcasts'),
-    ActivityBuilder.listening('my loud neighbors'),
+    ActivityBuilder(
+      name: 'your epic #plays',
+      type: ActivityType.watching,
+    ),
+    ActivityBuilder(
+      name: 'the US explode',
+      type: ActivityType.watching,
+    ),
+    ActivityBuilder(
+      name: 'California burn',
+      type: ActivityType.watching,
+    ),
+    ActivityBuilder(
+      name: 'Zucc watch you',
+      type: ActivityType.watching,
+    ),
+    ActivityBuilder(
+      name: 'Jere FC charts',
+      type: ActivityType.watching,
+    ),
+    ActivityBuilder(
+      name: 'James solo baron',
+      type: ActivityType.watching,
+    ),
+    ActivityBuilder(
+      name: 'Grant ward bushes',
+      type: ActivityType.watching,
+    ),
+    ActivityBuilder(
+      name: 'Josh play hentai',
+      type: ActivityType.watching,
+    ),
+    ActivityBuilder(
+      name: 'kNo gaslight people',
+      type: ActivityType.watching,
+    ),
+    ActivityBuilder(
+      name: 'DiamondFire',
+      type: ActivityType.watching,
+    ),
+    ActivityBuilder(
+      name: 'Arcane Season 2',
+      type: ActivityType.watching,
+    ),
+    ActivityBuilder(
+      name: 'puppers go woo',
+      type: ActivityType.watching,
+    ),
+    ActivityBuilder(
+      name: 'for H pings',
+      type: ActivityType.watching,
+    ),
+    ActivityBuilder(
+      name: 'Steve Harvey',
+      type: ActivityType.watching,
+    ),
+    ActivityBuilder(
+      name: 'Steve Harvey',
+      type: ActivityType.streaming,
+      url: Uri.parse('https://www.twitch.tv/jeremaster104'),
+    ),
+    ActivityBuilder(
+      name: 'Minecraft magic',
+      type: ActivityType.streaming,
+      url: Uri.parse('https://www.twitch.tv/jeremaster104'),
+    ),
+    ActivityBuilder(
+      name: 'free \$ giveaways',
+      type: ActivityType.streaming,
+      url: Uri.parse('https://www.youtube.com/watch?v=dQw4w9WgXcQ'),
+    ),
+    ActivityBuilder(
+      name: 'cute cat videos',
+      type: ActivityType.streaming,
+      url: Uri.parse('https://www.youtube.com/watch?v=dQw4w9WgXcQ'),
+    ),
+    ActivityBuilder(
+      name: 'League of Legends',
+      type: ActivityType.game,
+    ),
+    ActivityBuilder(
+      name: 'Legends of Runeterra',
+      type: ActivityType.game,
+    ),
+    ActivityBuilder(
+      name: 'Apex Legends',
+      type: ActivityType.game,
+    ),
+    ActivityBuilder(
+      name: 'Beat Saber',
+      type: ActivityType.game,
+    ),
+    ActivityBuilder(
+      name: 'Lethal Company',
+      type: ActivityType.game,
+    ),
+    ActivityBuilder(
+      name: 'TFT',
+      type: ActivityType.game,
+    ),
+    ActivityBuilder(
+      name: 'Outer Wilds',
+      type: ActivityType.game,
+    ),
+    ActivityBuilder(
+      name: 'with physics',
+      type: ActivityType.game,
+    ),
+    ActivityBuilder(
+      name: 'with my own code',
+      type: ActivityType.game,
+    ),
+    ActivityBuilder(
+      name: 'speedrun 1900s simulator',
+      type: ActivityType.game,
+    ),
+    ActivityBuilder(
+      name: 'during work hours',
+      type: ActivityType.game,
+    ),
+    ActivityBuilder(
+      name: 'your conversations',
+      type: ActivityType.listening,
+    ),
+    ActivityBuilder(
+      name: 'your music',
+      type: ActivityType.listening,
+    ),
+    ActivityBuilder(
+      name: 'true crime podcasts',
+      type: ActivityType.listening,
+    ),
+    ActivityBuilder(
+      name: 'my loud neighbors',
+      type: ActivityType.listening,
+    ),
+    ActivityBuilder(
+      name: 'Capitalism',
+      type: ActivityType.competing,
+    ),
   ];
 
   void setRandomPresence() {
     final activity = activities[_rng.nextInt(activities.length)];
-    bot.setPresence(PresenceBuilder.of(
-      status: UserStatus.online,
-      activity: activity,
+    bot.updatePresence(PresenceBuilder(
+      status: CurrentUserStatus.online,
+      isAfk: false,
+      activities: [activity],
     ));
   }
 
-  Future<void> handleHMessage(IMessage message) async {
-    _log.info('Handling h message from ${message.author.tag}');
+  Future<void> handleHMessage(Message message) async {
+    _log.info('Handling h message from ${message.author.username}');
 
     await message.delete();
-    await message.channel.sendMessage(MessageBuilder.content(await getImage(
-      imageApi: imageApi,
-      customSearchEngine: customSearchEngine,
-      query: 'Letter H',
-    )));
+    await message.channel.sendMessage(MessageBuilder(
+      content: await getImage(
+        imageApi: imageApi,
+        customSearchEngine: customSearchEngine,
+        query: 'toilet',
+      ),
+    ));
 
-    final phrase = phraseGenerator
-        .generatePhrase()
-        .replaceAll('%name%', '<@${message.author.id}>');
-    await message.channel
-        .sendMessage(MessageBuilder.content('$phrase <@&421563234651471872>'));
+    final response = await model.generateContent([
+      Content.text(
+        'Briefly describe how a toilet works. Then, say the letter "H" followed by a rallying call for gamers to assemble and play video games together using a toilet pun.',
+      )
+    ], safetySettings: [
+      for (final category in HarmCategory.values)
+        SafetySetting(category, HarmBlockThreshold.none),
+    ]);
+    final phrase = response.text ?? 'H now or else.';
+    // final phrase = phraseGenerator
+    //     .generatePhrase()
+    //     .replaceAll('%name%', '<@${message.author.id}>');
+
+    await message.channel.sendMessage(MessageBuilder(
+      content: '$phrase <@&421563234651471872>',
+    ));
 
     hBotData.count++;
     await hBotData.save();
 
     if (hBotData.count % 100 == 0) {
-      await message.channel.sendMessage(MessageBuilder.content(
-          'This is the ${hBotData.count}th H ping since April 5th, 2019. Crazy!'));
+      await message.channel.sendMessage(MessageBuilder(
+        content:
+            'This is the ${hBotData.count}th H ping since April 5th, 2019. Crazy!',
+      ));
     }
   }
 }

@@ -12,11 +12,11 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: streetsidesoftware/cspell-action@v1
+      - uses: actions/checkout@v4
+      - uses: streetsidesoftware/cspell-action@v6
         # Spellcheck is only supported on pull requests for some reason.
         if: ${{ github.event_name == 'pull_request' }}
-      - uses: dart-lang/setup-dart@v1.3
+      - uses: dart-lang/setup-dart@v1
         with:
           sdk: stable
       - run: dart pub get
