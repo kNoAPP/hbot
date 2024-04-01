@@ -247,7 +247,12 @@ class HDiscordBot {
         'Briefly describe how a toilet works. Then, say the letter "H" followed by a rallying call for gamers to assemble and play video games together using a toilet pun.',
       )
     ], safetySettings: [
-      for (final category in HarmCategory.values)
+      for (final category in [
+        HarmCategory.harassment,
+        HarmCategory.hateSpeech,
+        HarmCategory.sexuallyExplicit,
+        HarmCategory.dangerousContent,
+      ])
         SafetySetting(category, HarmBlockThreshold.none),
     ]);
     final phrase = response.text ?? 'H now or else.';
