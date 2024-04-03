@@ -380,10 +380,11 @@ packages:
   nyxx:
     dependency: "direct main"
     description:
-      name: nyxx
-      sha256: e12313698895754f21bd92b39c08b8a772546965d25159e9b604a4020aefa268
-      url: "https://pub.dev"
-    source: hosted
+      path: "."
+      ref: "feat/hang-status"
+      resolved-ref: "42edf67104721f489251f41d04acbf2b82d0f30d"
+      url: "https://github.com/DarpHome/nyxx.git"
+    source: git
     version: "6.2.0"
   oauth2:
     dependency: transitive

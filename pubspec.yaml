@@ -16,7 +16,10 @@ dependencies:
   googleapis_auth: ^1.5.1
   json_annotation: ^4.6.0
   logging: ^1.0.2
-  nyxx: ^6.1.0
+  nyxx:
+    git:
+      url: https://github.com/DarpHome/nyxx.git
+      ref: feat/hang-status
 
 dev_dependencies:
   build_runner: ^2.2.0
