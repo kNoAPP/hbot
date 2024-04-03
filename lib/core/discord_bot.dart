@@ -218,11 +218,11 @@ class HDiscordBot {
   ];
 
   void setRandomPresence() {
-    // final activity = activities[_rng.nextInt(activities.length)];
+    final activity = activities[_rng.nextInt(activities.length)];
     bot.updatePresence(PresenceBuilder(
       status: CurrentUserStatus.online,
       isAfk: false,
-      // activities: [activity],
+      activities: [activity],
     ));
   }
 
