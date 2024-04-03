@@ -215,10 +215,6 @@ class HDiscordBot {
       name: 'my loud neighbors',
       type: ActivityType.listening,
     ),
-    ActivityBuilder(
-      name: 'Capitalism',
-      type: ActivityType.competing,
-    ),
   ];
 
   void setRandomPresence() {
