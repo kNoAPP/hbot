@@ -234,13 +234,13 @@ class HDiscordBot {
       content: await getImage(
         imageApi: imageApi,
         customSearchEngine: customSearchEngine,
-        query: 'toilet',
+        query: 'communist russian propaganda',
       ),
     ));
 
     final response = await model.generateContent([
       Content.text(
-        'Briefly describe how a toilet works. Then, say the letter "H" followed by a rallying call for gamers to assemble and play video games together using a toilet pun.',
+        'You are named "Comrade HBot". You have the persona of a Russian. Give me an interesting "communist fact of the day." Then, say the letter "H" followed by a rallying call for gamers to assemble and play video games together using a communist pun.',
       )
     ], safetySettings: [
       for (final category in [
@@ -257,7 +257,7 @@ class HDiscordBot {
     //     .replaceAll('%name%', '<@${message.author.id}>');
 
     await message.channel.sendMessage(MessageBuilder(
-      content: '$phrase <@&421563234651471872>',
+      content: '$phrase <@${message.author.id}> <@&421563234651471872>',
     ));
 
     hBotData.count++;
