@@ -243,7 +243,7 @@ class HDiscordBot {
 
     final response = await model.generateContent([
       Content.text(
-        'Write a complicated, deep, intriguing, and hard message to a group of gamers that really doesn\'t say anything at all and has no point. Use the letter H excessively. Then at the end on a new line, write "- $author".',
+        'Write a complicated, deep, intriguing, and hard message to a group of gamers that really doesn\'t say anything at all and has no point. Keep it under 5 sentences. Use the letter H excessively, but don't write poetry. Then at the end on a new line, write "- $author".',
       )
     ], safetySettings: [
       for (final category in [
