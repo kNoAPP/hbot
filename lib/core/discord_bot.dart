@@ -229,18 +229,21 @@ class HDiscordBot {
   Future<void> handleHMessage(Message message) async {
     _log.info('Handling h message from ${message.author.username}');
 
+    final author =
+        ['Aristotle', 'Plato', 'Socrates', 'Confucius'][_rng.nextInt(4)];
+
     await message.delete();
     await message.channel.sendMessage(MessageBuilder(
       content: await getImage(
         imageApi: imageApi,
         customSearchEngine: customSearchEngine,
-        query: 'communist russian propaganda',
+        query: author,
       ),
     ));
 
     final response = await model.generateContent([
       Content.text(
-        'You are named "Comrade HBot". You have the persona of a Russian. Give me an interesting "communist fact of the day." Then, say the letter "H" followed by a rallying call for gamers to assemble and play video games together using a communist pun.',
+        'Write a complicated, deep, intriguing, and hard message to a group of gamers that really doesn\'t say anything at all and has no point. Use the letter H excessively. Then at the end on a new line, write "- $author".',
       )
     ], safetySettings: [
       for (final category in [
