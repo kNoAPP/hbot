@@ -229,21 +229,11 @@ class HDiscordBot {
   Future<void> handleHMessage(Message message) async {
     _log.info('Handling h message from ${message.author.username}');
 
-    final author =
-        ['Aristotle', 'Plato', 'Socrates', 'Confucius'][_rng.nextInt(4)];
-
     await message.delete();
-    await message.channel.sendMessage(MessageBuilder(
-      content: await getImage(
-        imageApi: imageApi,
-        customSearchEngine: customSearchEngine,
-        query: author,
-      ),
-    ));
 
     final response = await model.generateContent([
       Content.text(
-        'Write a complicated, deep, intriguing, and hard message to a group of gamers that really doesn\'t say anything at all and has no point. Keep it under 5 sentences. Use the letter H excessively, but don\'t write poetry. Then at the end on a new line, write "\\- $author".',
+        'Tell me an interesting fact about today\'s date in history.',
       )
     ], safetySettings: [
       for (final category in [
@@ -254,10 +244,16 @@ class HDiscordBot {
       ])
         SafetySetting(category, HarmBlockThreshold.none),
     ]);
+
     final phrase = response.text ?? 'H now or else.';
-    // final phrase = phraseGenerator
-    //     .generatePhrase()
-    //     .replaceAll('%name%', '<@${message.author.id}>');
+
+    await message.channel.sendMessage(MessageBuilder(
+      content: await getImage(
+        imageApi: imageApi,
+        customSearchEngine: customSearchEngine,
+        query: phrase,
+      ),
+    ));
 
     await message.channel.sendMessage(MessageBuilder(
       content: '$phrase <@${message.author.id}> <@&421563234651471872>',
