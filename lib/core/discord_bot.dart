@@ -232,7 +232,9 @@ class HDiscordBot {
 
     await message.delete();
 
-    final date = DateFormat('MMMM d').format(DateTime.now());
+    // Hack for PST timezone
+    final date = DateFormat('MMMM d')
+        .format(DateTime.now().subtract(Duration(hours: 8)));
 
     final response = await model.generateContent([
       Content.text(
