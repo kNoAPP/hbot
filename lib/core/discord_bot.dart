@@ -8,6 +8,7 @@ import 'package:googleapis_auth/googleapis_auth.dart';
 import 'package:hbot/core/google_image_search.dart';
 import 'package:hbot/core/phrase_generator.dart';
 import 'package:hbot/domain/h_bot_data.dart';
+import 'package:intl/intl.dart';
 import 'package:nyxx/nyxx.dart';
 
 Future<void> startBot({
@@ -231,9 +232,11 @@ class HDiscordBot {
 
     await message.delete();
 
+    final date = DateFormat('MMMM d').format(DateTime.now());
+
     final response = await model.generateContent([
       Content.text(
-        'Tell me an interesting fact about today\'s date in history.',
+        'Tell me an interesting fact about today\'s date ($date) in history.',
       )
     ], safetySettings: [
       for (final category in [
