@@ -12,17 +12,13 @@ void main(List<String> arguments) {
     )
     ..addOption(
       'googleApiKey',
-      help: 'Google API key to authenticate the image search',
+      help:
+          'Google API key to authenticate the image search and Gemini-pro model',
       mandatory: true,
     )
     ..addOption(
       'customSearchEngine',
       help: 'Custom search engine id for the image search',
-      mandatory: true,
-    )
-    ..addOption(
-      'googleAiApiKey',
-      help: 'Google AI API key to authenticate Gemini-pro model',
       mandatory: true,
     )
     ..addOption(
@@ -44,7 +40,6 @@ void main(List<String> arguments) {
     discordToken: result['discordToken'],
     googleApiKey: result['googleApiKey'],
     customSearchEngine: result['customSearchEngine'],
-    googleAiApiKey: result['googleAiApiKey'],
     phrasesFile: File(result['phrases']),
   );
 }

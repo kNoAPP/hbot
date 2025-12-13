@@ -15,7 +15,6 @@ Future<void> startBot({
   required String discordToken,
   required String googleApiKey,
   required String customSearchEngine,
-  required String googleAiApiKey,
   required File phrasesFile,
 }) async {
   final bot = await Nyxx.connectGateway(
@@ -34,7 +33,7 @@ Future<void> startBot({
   final phraseGenerator = await PhraseGenerator.fromFile(phrasesFile);
   final imageApi = CustomSearchApi(clientViaApiKey(googleApiKey));
   final model =
-      GenerativeModel(model: 'gemini-2.5-flash', apiKey: googleAiApiKey);
+      GenerativeModel(model: 'gemini-2.5-flash', apiKey: googleApiKey);
 
   await HDiscordBot(
     bot: bot,
