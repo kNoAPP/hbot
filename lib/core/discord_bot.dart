@@ -33,7 +33,7 @@ Future<void> startBot({
   final phraseGenerator = await PhraseGenerator.fromFile(phrasesFile);
   final imageApi = CustomSearchApi(clientViaApiKey(googleApiKey));
   final model =
-      GenerativeModel(model: 'gemini-2.5-flash', apiKey: googleApiKey);
+      GenerativeModel(model: 'gemini-2.5-flash-lite', apiKey: googleApiKey);
 
   await HDiscordBot(
     bot: bot,
