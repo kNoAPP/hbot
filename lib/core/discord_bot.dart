@@ -21,19 +21,17 @@ Future<void> startBot({
     discordToken,
     GatewayIntents.all,
     options: GatewayClientOptions(
-      plugins: [
-        Logging(),
-        CliIntegration(),
-        IgnoreExceptions(),
-      ],
+      plugins: [Logging(), CliIntegration(), IgnoreExceptions()],
     ),
   );
 
   final hBotData = await HBotData.load();
   final phraseGenerator = await PhraseGenerator.fromFile(phrasesFile);
   final imageApi = CustomSearchApi(clientViaApiKey(googleApiKey));
-  final model =
-      GenerativeModel(model: 'gemini-2.5-flash-lite', apiKey: googleApiKey);
+  final model = GenerativeModel(
+    model: 'gemini-2.5-flash-lite',
+    apiKey: googleApiKey,
+  );
 
   await HDiscordBot(
     bot: bot,
@@ -62,6 +60,9 @@ class HDiscordBot {
   String customSearchEngine;
   GenerativeModel model;
 
+  static const _hCommand = 'h';
+  static const _hSetCommand = 'hset';
+
   final _rng = Random();
   final _log = Logger('HDiscordBot');
 
@@ -72,70 +73,52 @@ class HDiscordBot {
       Timer.periodic(Duration(hours: 2), (timer) => setRandomPresence());
     });
 
-    bot.onMessageCreate.listen((event) async {
-      if (event.message.content == '!h') {
-        await handleHMessage(event.message);
+    // Register slash commands.
+    await bot.commands.bulkOverride([
+      ApplicationCommandBuilder.chatInput(
+        name: _hCommand,
+        description: 'Summon the gamers!',
+        options: [],
+      ),
+      ApplicationCommandBuilder.chatInput(
+        name: _hSetCommand,
+        description: 'Set the role to ping with /h',
+        defaultMemberPermissions: Permissions.administrator,
+        options: [
+          CommandOptionBuilder.role(
+            name: 'role',
+            description: 'The role to ping',
+            isRequired: true,
+          ),
+        ],
+      ),
+    ]);
+
+    bot.onApplicationCommandInteraction.listen((event) async {
+      switch (event.interaction.data.name) {
+        case _hCommand:
+          await handleHInteraction(event.interaction);
+        case _hSetCommand:
+          await handleHSetInteraction(event.interaction);
       }
     });
   }
 
   final activities = [
-    ActivityBuilder(
-      name: 'your epic #plays',
-      type: ActivityType.watching,
-    ),
-    ActivityBuilder(
-      name: 'the US explode',
-      type: ActivityType.watching,
-    ),
-    ActivityBuilder(
-      name: 'California burn',
-      type: ActivityType.watching,
-    ),
-    ActivityBuilder(
-      name: 'Zucc watch you',
-      type: ActivityType.watching,
-    ),
-    ActivityBuilder(
-      name: 'Jere FC charts',
-      type: ActivityType.watching,
-    ),
-    ActivityBuilder(
-      name: 'James solo baron',
-      type: ActivityType.watching,
-    ),
-    ActivityBuilder(
-      name: 'Grant ward bushes',
-      type: ActivityType.watching,
-    ),
-    ActivityBuilder(
-      name: 'Josh play hentai',
-      type: ActivityType.watching,
-    ),
-    ActivityBuilder(
-      name: 'kNo gaslight people',
-      type: ActivityType.watching,
-    ),
-    ActivityBuilder(
-      name: 'DiamondFire',
-      type: ActivityType.watching,
-    ),
-    ActivityBuilder(
-      name: 'Arcane Season 2',
-      type: ActivityType.watching,
-    ),
-    ActivityBuilder(
-      name: 'puppers go woo',
-      type: ActivityType.watching,
-    ),
-    ActivityBuilder(
-      name: 'for H pings',
-      type: ActivityType.watching,
-    ),
-    ActivityBuilder(
-      name: 'Steve Harvey',
-      type: ActivityType.watching,
-    ),
+    ActivityBuilder(name: 'your epic #plays', type: ActivityType.watching),
+    ActivityBuilder(name: 'the US explode', type: ActivityType.watching),
+    ActivityBuilder(name: 'California burn', type: ActivityType.watching),
+    ActivityBuilder(name: 'Zucc watch you', type: ActivityType.watching),
+    ActivityBuilder(name: 'Jere FC charts', type: ActivityType.watching),
+    ActivityBuilder(name: 'James solo baron', type: ActivityType.watching),
+    ActivityBuilder(name: 'Grant ward bushes', type: ActivityType.watching),
+    ActivityBuilder(name: 'Josh play hentai', type: ActivityType.watching),
+    ActivityBuilder(name: 'kNo gaslight people', type: ActivityType.watching),
+    ActivityBuilder(name: 'DiamondFire', type: ActivityType.watching),
+    ActivityBuilder(name: 'Arcane Season 2', type: ActivityType.watching),
+    ActivityBuilder(name: 'puppers go woo', type: ActivityType.watching),
+    ActivityBuilder(name: 'for H pings', type: ActivityType.watching),
+    ActivityBuilder(name: 'Steve Harvey', type: ActivityType.watching),
     ActivityBuilder(
       name: 'Steve Harvey',
       type: ActivityType.streaming,
@@ -156,122 +139,131 @@ class HDiscordBot {
       type: ActivityType.streaming,
       url: Uri.parse('https://www.youtube.com/watch?v=dQw4w9WgXcQ'),
     ),
-    ActivityBuilder(
-      name: 'League of Legends',
-      type: ActivityType.game,
-    ),
-    ActivityBuilder(
-      name: 'Legends of Runeterra',
-      type: ActivityType.game,
-    ),
-    ActivityBuilder(
-      name: 'Apex Legends',
-      type: ActivityType.game,
-    ),
-    ActivityBuilder(
-      name: 'Beat Saber',
-      type: ActivityType.game,
-    ),
-    ActivityBuilder(
-      name: 'Lethal Company',
-      type: ActivityType.game,
-    ),
-    ActivityBuilder(
-      name: 'TFT',
-      type: ActivityType.game,
-    ),
-    ActivityBuilder(
-      name: 'Outer Wilds',
-      type: ActivityType.game,
-    ),
-    ActivityBuilder(
-      name: 'with physics',
-      type: ActivityType.game,
-    ),
-    ActivityBuilder(
-      name: 'with my own code',
-      type: ActivityType.game,
-    ),
-    ActivityBuilder(
-      name: 'speedrun 1900s simulator',
-      type: ActivityType.game,
-    ),
-    ActivityBuilder(
-      name: 'during work hours',
-      type: ActivityType.game,
-    ),
-    ActivityBuilder(
-      name: 'your conversations',
-      type: ActivityType.listening,
-    ),
-    ActivityBuilder(
-      name: 'your music',
-      type: ActivityType.listening,
-    ),
-    ActivityBuilder(
-      name: 'true crime podcasts',
-      type: ActivityType.listening,
-    ),
-    ActivityBuilder(
-      name: 'my loud neighbors',
-      type: ActivityType.listening,
-    ),
+    ActivityBuilder(name: 'League of Legends', type: ActivityType.game),
+    ActivityBuilder(name: 'Legends of Runeterra', type: ActivityType.game),
+    ActivityBuilder(name: 'Apex Legends', type: ActivityType.game),
+    ActivityBuilder(name: 'Beat Saber', type: ActivityType.game),
+    ActivityBuilder(name: 'Lethal Company', type: ActivityType.game),
+    ActivityBuilder(name: 'TFT', type: ActivityType.game),
+    ActivityBuilder(name: 'Outer Wilds', type: ActivityType.game),
+    ActivityBuilder(name: 'with physics', type: ActivityType.game),
+    ActivityBuilder(name: 'with my own code', type: ActivityType.game),
+    ActivityBuilder(name: 'speedrun 1900s simulator', type: ActivityType.game),
+    ActivityBuilder(name: 'during work hours', type: ActivityType.game),
+    ActivityBuilder(name: 'your conversations', type: ActivityType.listening),
+    ActivityBuilder(name: 'your music', type: ActivityType.listening),
+    ActivityBuilder(name: 'true crime podcasts', type: ActivityType.listening),
+    ActivityBuilder(name: 'my loud neighbors', type: ActivityType.listening),
   ];
 
   void setRandomPresence() {
     final activity = activities[_rng.nextInt(activities.length)];
-    bot.updatePresence(PresenceBuilder(
-      status: CurrentUserStatus.online,
-      isAfk: false,
-      activities: [activity],
-    ));
+    bot.updatePresence(
+      PresenceBuilder(
+        status: CurrentUserStatus.online,
+        isAfk: false,
+        activities: [activity],
+      ),
+    );
   }
 
-  Future<void> handleHMessage(Message message) async {
-    _log.info('Handling h message from ${message.author.username}');
+  Future<void> handleHInteraction(
+    ApplicationCommandInteraction interaction,
+  ) async {
+    final user = interaction.member?.user ?? interaction.user;
+    _log.info('Handling /$_hCommand command from ${user?.username}');
 
-    await message.delete();
+    if (hBotData.roleId == null) {
+      await interaction.respond(
+        MessageBuilder(
+          content:
+              'No H-Gang role set! Use /$_hSetCommand to configure one first.',
+          flags: MessageFlags.ephemeral,
+        ),
+      );
+      return;
+    }
+
+    // Acknowledge immediately since the response may take time.
+    await interaction.acknowledge();
 
     // Hack for PST timezone
-    final date = DateFormat('MMMM d')
-        .format(DateTime.now().subtract(Duration(hours: 8)));
+    final date = DateFormat(
+      'MMMM d',
+    ).format(DateTime.now().subtract(Duration(hours: 8)));
 
-    final response = await model.generateContent([
-      Content.text(
-        'Tell me an interesting fact about today\'s date ($date) in history.',
-      )
-    ], safetySettings: [
-      for (final category in [
-        HarmCategory.harassment,
-        HarmCategory.hateSpeech,
-        HarmCategory.sexuallyExplicit,
-        HarmCategory.dangerousContent,
-      ])
-        SafetySetting(category, HarmBlockThreshold.none),
-    ]);
+    final response = await model.generateContent(
+      [
+        Content.text(
+          'Tell me an interesting fact about today\'s date ($date) in history.',
+        ),
+      ],
+      safetySettings: [
+        for (final category in [
+          HarmCategory.harassment,
+          HarmCategory.hateSpeech,
+          HarmCategory.sexuallyExplicit,
+          HarmCategory.dangerousContent,
+        ])
+          SafetySetting(category, HarmBlockThreshold.none),
+      ],
+    );
 
     final phrase = response.text ?? 'H now or else.';
 
-    await message.channel.sendMessage(MessageBuilder(
-      content: await getImage(
-        imageApi: imageApi,
-        customSearchEngine: customSearchEngine,
-        query: phrase,
-      ),
-    ));
+    final imageUrl = await getImage(
+      imageApi: imageApi,
+      customSearchEngine: customSearchEngine,
+      query: phrase,
+    );
 
-    await message.channel.sendMessage(MessageBuilder(
-      content: '$phrase <@${message.author.id}> <@&421563234651471872>',
-    ));
+    // Respond to the interaction with the image.
+    await interaction.respond(MessageBuilder(content: imageUrl));
+
+    // Send the phrase + mentions as a follow-up message.
+    await interaction.createFollowup(
+      MessageBuilder(content: '$phrase <@${user?.id}> <@&${hBotData.roleId}>'),
+    );
 
     hBotData.count++;
     await hBotData.save();
 
     if (hBotData.count % 100 == 0) {
-      await message.channel.sendMessage(MessageBuilder(
-        content:
-            'This is the ${hBotData.count}th H ping since April 5th, 2019. Crazy!',
-      ));
+      await interaction.createFollowup(
+        MessageBuilder(
+          content:
+              'This is the ${hBotData.count}th H ping since April 5th, 2019. Crazy!',
+        ),
+      );
     }
+  }
+
+  Future<void> handleHSetInteraction(
+    ApplicationCommandInteraction interaction,
+  ) async {
+    final roleOption = interaction.data.options?.firstWhere(
+      (o) => o.name == 'role',
+    );
+    final roleId = roleOption?.value as Snowflake?;
+
+    if (roleId == null) {
+      await interaction.respond(
+        MessageBuilder(
+          content: 'Please provide a role.',
+          flags: MessageFlags.ephemeral,
+        ),
+      );
+      return;
+    }
+
+    hBotData.roleId = roleId.toString();
+    await hBotData.save();
+
+    await interaction.respond(
+      MessageBuilder(
+        content: 'H-Gang role set to <@&$roleId>!',
+        flags: MessageFlags.ephemeral,
+      ),
+    );
   }
 }

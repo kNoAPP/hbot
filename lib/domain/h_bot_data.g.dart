@@ -6,11 +6,12 @@ part of 'h_bot_data.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$_HBotData _$$_HBotDataFromJson(Map<String, dynamic> json) => _$_HBotData(
-      count: json['count'] as int? ?? 0,
-    );
+_HBotData _$HBotDataFromJson(Map<String, dynamic> json) => _HBotData(
+  count: (json['count'] as num?)?.toInt() ?? 0,
+  roleId: json['roleId'] as String?,
+);
 
-Map<String, dynamic> _$$_HBotDataToJson(_$_HBotData instance) =>
-    <String, dynamic>{
-      'count': instance.count,
-    };
+Map<String, dynamic> _$HBotDataToJson(_HBotData instance) => <String, dynamic>{
+  'count': instance.count,
+  'roleId': instance.roleId,
+};

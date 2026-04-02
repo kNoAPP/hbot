@@ -7,11 +7,12 @@ part 'h_bot_data.freezed.dart';
 part 'h_bot_data.g.dart';
 
 @unfreezed
-class HBotData with _$HBotData {
+sealed class HBotData with _$HBotData {
   const HBotData._();
 
   factory HBotData({
     @Default(0) int count,
+    String? roleId,
   }) = _HBotData;
 
   factory HBotData.fromJson(Map<String, dynamic> json) =>
