@@ -244,7 +244,11 @@ class HDiscordBot {
     final roleOption = interaction.data.options?.firstWhere(
       (o) => o.name == 'role',
     );
-    final roleId = roleOption?.value as Snowflake?;
+    final roleId = switch (roleOption?.value) {
+      final String s => Snowflake.parse(s),
+      final Snowflake s => s,
+      _ => null,
+    };
 
     if (roleId == null) {
       await interaction.respond(
