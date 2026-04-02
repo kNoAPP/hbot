@@ -78,7 +78,20 @@ class HDiscordBot {
       ApplicationCommandBuilder.chatInput(
         name: _hCommand,
         description: 'Summon the gamers!',
-        options: [],
+        options: [
+          CommandOptionBuilder.role(
+            name: 'role1',
+            description: 'Optional role to ping instead of H-Gang',
+          ),
+          CommandOptionBuilder.role(
+            name: 'role2',
+            description: 'Optional additional role to ping',
+          ),
+          CommandOptionBuilder.role(
+            name: 'role3',
+            description: 'Optional additional role to ping',
+          ),
+        ],
       ),
       ApplicationCommandBuilder.chatInput(
         name: _hSetCommand,
@@ -173,15 +186,26 @@ class HDiscordBot {
     final user = interaction.member?.user ?? interaction.user;
     _log.info('Handling /$_hCommand command from ${user?.username}');
 
-    if (hBotData.roleId == null) {
-      await interaction.respond(
-        MessageBuilder(
-          content:
-              'No H-Gang role set! Use /$_hSetCommand to configure one first.',
-          flags: MessageFlags.ephemeral,
-        ),
-      );
-      return;
+    // Collect any optional role overrides from the command options.
+    final roleIds = <String>[
+      for (final option in interaction.data.options ?? [])
+        if (option.name.startsWith('role') && option.value != null)
+          option.value.toString(),
+    ];
+
+    // Fall back to the default H-Gang role if none were provided.
+    if (roleIds.isEmpty) {
+      if (hBotData.roleId == null) {
+        await interaction.respond(
+          MessageBuilder(
+            content:
+                'No H-Gang role set! Use /$_hSetCommand to configure one first.',
+            flags: MessageFlags.ephemeral,
+          ),
+        );
+        return;
+      }
+      roleIds.add(hBotData.roleId!);
     }
 
     // Acknowledge immediately since the response may take time.
@@ -221,8 +245,9 @@ class HDiscordBot {
     await interaction.respond(MessageBuilder(content: imageUrl));
 
     // Send the phrase + mentions as a follow-up message.
+    final roleMentions = roleIds.map((id) => '<@&$id>').join(' ');
     await interaction.createFollowup(
-      MessageBuilder(content: '$phrase <@${user?.id}> <@&${hBotData.roleId}>'),
+      MessageBuilder(content: '$phrase <@${user?.id}> $roleMentions'),
     );
 
     hBotData.count++;
