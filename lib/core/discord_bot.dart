@@ -184,6 +184,7 @@ class HDiscordBot {
     ApplicationCommandInteraction interaction,
   ) async {
     final user = interaction.member?.user ?? interaction.user;
+    final channel = await interaction.channel!.get() as TextChannel;
     _log.info('Handling /$_hCommand command from ${user?.username}');
 
     // Collect any optional role overrides from the command options.
@@ -242,11 +243,12 @@ class HDiscordBot {
     );
 
     // Respond to the interaction with the image.
-    await interaction.respond(MessageBuilder(content: imageUrl));
+    await channel.sendMessage(MessageBuilder(content: imageUrl));
 
-    // Send the phrase + mentions as a follow-up message.
+    // Send the phrase + mentions as a regular channel message so role pings
+    // actually notify users (interaction responses suppress role mentions).
     final roleMentions = roleIds.map((id) => '<@&$id>').join(' ');
-    await interaction.createFollowup(
+    await channel.sendMessage(
       MessageBuilder(content: '$phrase <@${user?.id}> $roleMentions'),
     );
 
@@ -254,7 +256,7 @@ class HDiscordBot {
     await hBotData.save();
 
     if (hBotData.count % 100 == 0) {
-      await interaction.createFollowup(
+      await channel.sendMessage(
         MessageBuilder(
           content:
               'This is the ${hBotData.count}th H ping since April 5th, 2019. Crazy!',
