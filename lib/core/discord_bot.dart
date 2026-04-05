@@ -210,7 +210,7 @@ class HDiscordBot {
     }
 
     // Acknowledge immediately since the response may take time.
-    await interaction.acknowledge();
+    await interaction.acknowledge(withResponse: false);
 
     // Hack for PST timezone
     final date = DateFormat(
