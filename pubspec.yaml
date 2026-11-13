@@ -17,7 +17,15 @@ dependencies:
   intl: ^0.20.2
   json_annotation: ^4.6.0
   logging: ^1.0.2
-  nyxx: ^6.8.1
+  # Pinned to nyxx-discord/nyxx#789 (v6.9.1 + UnknownChannel support).
+  # Discord started sending an undocumented channel type (20) in GUILD_CREATE,
+  # which crashes nyxx <= 6.9.1 and kills the gateway event stream, so no
+  # slash commands are received. Switch back to a hosted version once a
+  # release includes the fix (https://github.com/nyxx-discord/nyxx/issues/790).
+  nyxx:
+    git:
+      url: https://github.com/nyxx-discord/nyxx.git
+      ref: ad3f6febbfc634e5172c252304d35b4a8be5f1c7
 
 dev_dependencies:
   build_runner: ^2.2.0
